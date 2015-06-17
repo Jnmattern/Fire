@@ -12,7 +12,7 @@ Layer *rootLayer, *mainLayer;
 TextLayer *hourLayer;
 uint8_t *fire;
 GColor8 colors[256];
-static char empty[] = "";
+GFont fuegoFont;
 
 #ifdef LOG_FPS
 static time_t ts_start, ts_end;
@@ -43,7 +43,7 @@ void mainLayerUpdate(struct Layer *layer, GContext *ctx) {
 
 
   // Randomize a few sparkles
-  for (i=0; i<15; i++) {
+  for (i=0; i<10; i++) {
     int y = 108 + rand()%55;
     int x = 2 + rand()%(SCREEN_WIDTH-4);
     int offset = SCREEN_WIDTH*y + x;
@@ -59,7 +59,7 @@ void mainLayerUpdate(struct Layer *layer, GContext *ctx) {
 
   // Replace Hour text in white with random temperature
   for (x = 10080; x<16271; x++) {
-    if (fbData[x] == 0xff) fire[x] = 64 + rand()%64;
+    if (fbData[x] == 0xff) fire[x] = 72 + rand()%48;
   }
 
   // Feed the fire on bottom line by randomizing some hot pixels
@@ -144,6 +144,8 @@ void handle_init(void) {
   fire = malloc(SCREEN_WIDTH*SCREEN_HEIGHT + 1);
 
   initColors();
+
+  fuegoFont = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_FUEGO_48));
   
   window = window_create();
   window_stack_push(window, true);
@@ -153,7 +155,7 @@ void handle_init(void) {
   hourLayer = text_layer_create(GRect(0, 60, 144, 100));
   text_layer_set_background_color(hourLayer, GColorClear);
   text_layer_set_text_color(hourLayer, GColorWhite);
-  text_layer_set_font(hourLayer, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
+  text_layer_set_font(hourLayer, fuegoFont);
   text_layer_set_text_alignment(hourLayer, GTextAlignmentCenter);
   layer_add_child(rootLayer, text_layer_get_layer(hourLayer));
 
@@ -170,6 +172,7 @@ void handle_deinit(void) {
   layer_destroy(mainLayer);
   text_layer_destroy(hourLayer);
   window_destroy(window);
+  fonts_unload_custom_font(fuegoFont);
   free(fire);
 }
 
